@@ -1,0 +1,60 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  color: #32325d;
+}
+
+.page-container {
+  top: 0;
+  left: 0;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+#side-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  border: 10px dashed black;
+
+  /* Border around transparent image, laggy on mobile */
+  /* -webkit-filter: 
+  drop-shadow(2px 2px 0 #fff) 
+  drop-shadow(-2px 2px 0 #fff) 
+  drop-shadow(2px -2px 0 #fff) 
+  drop-shadow(-2px -2px 0 #fff);
+  filter:
+  drop-shadow(2px 2px 0 #fff) 
+  drop-shadow(-2px 2px 0 #fff) 
+  drop-shadow(2px -2px 0 #fff) 
+  drop-shadow(-2px -2px 0 #fff); */
+  
+  max-width: 95vh;
+  max-height: 95vw;
+}
+
+.ui {
+  position: absolute;
+  width: 100%;
+  z-index: 10;
+  /* padding: 20px; */
+  /* background: #00000088; */
+  text-align: center;
+}
+
+#overlay {
+  position: fixed; /* Sit on top of the page content */
+  width: 100%; /* Full width (cover the whole page) */
+  height: 100%; /* Full height (cover the whole page) */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  /* background: #33333333 */
+}
