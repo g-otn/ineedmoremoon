@@ -1,0 +1,14 @@
+{
+  "name": "ineedmoremoon-visualizer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "generate-data.js",
+  "scripts": {
+    "start": "node generate-data.js",
+    "serve": "npx serve public",
+    "gh-pages-deploy": "git subtree --prefix public push origin gh-pages"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {}
+}
