@@ -3,6 +3,8 @@ html, body {
   margin: 0;
   padding: 0;
   color: #32325d;
+  user-select: none;
+  background-color: black;
 }
 
 .page-container {
@@ -13,6 +15,10 @@ html, body {
   width: 100%;
 }
 
+#images {
+  /* max-width: 100%; */
+}
+
 #images img {
   position: absolute;
   top: 0;
@@ -20,7 +26,6 @@ html, body {
   right: 0;
   bottom: 0;
   margin: auto;
-  border: 5px dashed black;
 
   /* Border around transparent image, laggy on mobile */
   /* -webkit-filter: 
@@ -46,14 +51,7 @@ html, body {
   /* background: #00000088; */
 }
 
-#overlay {
-  position: fixed; /* Sit on top of the page content */
-  width: 100%; /* Full width (cover the whole page) */
-  height: 100%; /* Full height (cover the whole page) */
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 20;
-  /* background: #33333333 */
+
+nav {
+  max-width: 100vw;
 }
