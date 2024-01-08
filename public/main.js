@@ -29,8 +29,8 @@ const smoothResetPanAndZoom = () => {
     currentImage.moveBy(-xys.x, -xys.y, true);
     currentImage.smoothZoomAbs(xys.x, xys.y, 1);
   }
-  currentImage.moveTo(0, 0); // to be sure to go back to (0,0)
-  currentImage.zoomAbs(0, 0, 1); // to be sure to go back to scale 1
+  // currentImage.moveTo(0, 0); // to be sure to go back to (0,0)
+  // currentImage.zoomAbs(0, 0, 1); // to be sure to go back to scale 1
 };
 
 const resetPanAndZoom = () => {
@@ -38,15 +38,32 @@ const resetPanAndZoom = () => {
   currentImage.zoomAbs(0, 0, 1);
 };
 
-const zoomOnName = (listIndex) => {
-  const item = sides[currentSideIndex].list[listIndex];
-  const m = sides[currentSideIndex].metadata;
-  console.log(item, m);
-  const y = item.lineIndex / m.lineCount;
-  console.log(y);
-  console.log(currentImage);
-  // resetPanAndZoom()
-  currentImage.smoothZoom(200, 400, 5);
+const zoomOnName = (sideIndex, listIndex) => {
+  sideIndex = Number(sideIndex);
+  listIndex = Number(listIndex);
+
+  console.log('zoom side', currentSideIndex, sideIndex);
+  if (currentSideIndex !== sideIndex) {
+    setSide(sideIndex);
+  }
+
+  smoothResetPanAndZoom();
+
+  const { list, metadata } = sides[currentSideIndex];
+
+  const item = list[listIndex];
+
+  const { height, width } = $currentImageElement[0];
+
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const positiveDeltaX = item.lineCharOffset / metadata.lineLengths[item.lineIndex];
+  const x = width * positiveDeltaX;
+  const y = height * (item.lineIndex / metadata.lineCount);
+
+  console.log(x, positiveDeltaX, '|', y);
+
+  currentImage.smoothMoveTo(x, y);
 };
 
 const setUIEnabled = (enable) => {
@@ -56,22 +73,10 @@ const setUIEnabled = (enable) => {
 };
 
 const setSide = (sideIndex) => {
-  if (!Number.isFinite(sideIndex) || sideIndex === currentSideIndex) {
-    return;
-  }
-
-  // Block actions
   $currentImageElement.addClass('d-none');
-  setUIEnabled(false);
 
   // Update element ref
-  if ($currentImageElement === $sideImg1) {
-    $currentImageElement = $sideImg2;
-  } else {
-    $currentImageElement = $sideImg1;
-  }
-
-  $currentImageElement.removeClass('d-none');
+  $currentImageElement = sideIndex === 0 ? $sideImg1 : $sideImg2;
 
   // Update panzoom ref
   if (currentImage) {
@@ -79,28 +84,30 @@ const setSide = (sideIndex) => {
     currentImage.dispose();
   }
   currentImage = panzoom($currentImageElement[0], {
-    maxZoom: 20,
+    maxZoom: 25,
     minZoom: 0.75,
-    zoomSpeed: 10,
-    // bounds: true, // breaks smoothResetPanAndZoom
+    zoomSpeed: 0.8,
+    smoothScroll: true,
+    // bounds: true, // breaks smoothResetPanAndZoom in desktop
   });
+
+  currentSideIndex = sideIndex;
 
   //debug
   window.img = currentImage;
   currentImage.on('transform', (e) => console.log(e.getTransform()));
 
-  currentSideIndex = sideIndex;
+  // Update UI
   $sideToggleButton.text(`Side ${currentSideIndex + 1}`);
-
-  setUIEnabled(true);
+  $currentImageElement.removeClass('d-none');
 };
 
-const createOptGroupFromList = (list, index, label) => {
+const createOptGroupFromList = (list, sideIndex, label) => {
   const optgroup = document.createElement('optgroup');
   optgroup.label = label;
 
-  list.forEach((v, i) => {
-    const newOption = new Option(v.name, i, false, false);
+  list.forEach((v, listIndex) => {
+    const newOption = new Option(v.name, `${sideIndex}-${listIndex}`, false, false);
     optgroup.append(newOption);
   });
 
@@ -124,11 +131,15 @@ const createOptionsFromSides = (sides) => {
 
 $sideToggleButton.click((e) => setSide(currentSideIndex === 1 ? 0 : 1));
 
-$resetButton.click((e) => smoothResetPanAndZoom(currentImage));
+$resetButton.click((e) => {
+  $search.val(null).trigger('change');
+  smoothResetPanAndZoom(currentImage);
+});
 
 $search.on('select2:select', (e) => {
-  const listIndex = $search.val();
-  zoomOnName(listIndex);
+  const [sideIndex, listIndex] = $search.val().split('-');
+
+  zoomOnName(sideIndex, listIndex);
 });
 
 // *************************************************************************
@@ -138,6 +149,7 @@ $search.select2({
   theme: 'bootstrap-5',
   placeholder: 'Loading...',
   disabled: true,
+  width: 'auto',
 });
 
 $('#images')
@@ -167,6 +179,8 @@ $('#images')
     $search.select2({
       theme: 'bootstrap-5',
       placeholder: 'Search for a name...',
+      width: 'auto',
+      allowClear: true,
       disabled: false,
       minimumInputLength: 1,
       maximumInputLength: 44,
