@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node generate-data.js",
     "serve": "npx serve public",
-    "gh-pages-deploy": "git subtree --prefix public push origin gh-pages"
+    "deploy": "npm start && git subtree --prefix public push origin gh-pages"
   },
   "author": "",
   "license": "MIT",

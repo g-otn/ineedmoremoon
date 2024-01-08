@@ -1,167 +1,182 @@
-$(window).on('load', async () => {
+const $sideImg1 = $('#img-side1');
+const $sideImg2 = $('#img-side2');
 
-  // *************************************************************************
-  // Declare variables and constants
+// *************************************************************************
 
-  const $sideImg = $('#side-img')
-  const $sideDropdownButton = $('#side-dropdown-button')
-  const $sideDropdown = $('#side-dropdown')
-  const $searchBox = $('#search')
-  const $resetButton = $('#reset')
-  const $overlay = $('#overlay')
+const $sideToggleButton = $('#side-toggle');
+const $search = $('#search');
+const $resetButton = $('#reset');
 
-  const sides = []
-  const sideImgPaths = ['assets/image/side1.png', 'assets/image/side2.png']
+let sides = [];
+let currentSideIndex = -1;
+let currentImage = null;
+let $currentImageElement = $sideImg1;
 
-  let currentSideIndex = -1
+// *************************************************************************
 
-  let img, fuse
+// https://github.com/anvaka/panzoom/issues/69#issuecomment-535444960
+const smoothResetPanAndZoom = () => {
+  const xys = currentImage.getTransform();
+  // img is the reference to the panzoom object
+  if (xys.scale > 1) {
+    // calculate the point that should not move
+    const fScale = 1 - xys.scale;
+    const fixeX = xys.x / fScale;
+    const fixeY = xys.y / fScale;
+    currentImage.smoothZoomAbs(fixeX, fixeY, 1);
+  } else {
+    // just go back to (0, 0) and scale 1
+    currentImage.moveBy(-xys.x, -xys.y, true);
+    currentImage.smoothZoomAbs(xys.x, xys.y, 1);
+  }
+  currentImage.moveTo(0, 0); // to be sure to go back to (0,0)
+  currentImage.zoomAbs(0, 0, 1); // to be sure to go back to scale 1
+};
 
-  // *************************************************************************
-  // Function definitions
+const resetPanAndZoom = () => {
+  currentImage.moveTo(0, 0);
+  currentImage.zoomAbs(0, 0, 1);
+};
 
-  // https://github.com/anvaka/panzoom/issues/69#issuecomment-535444960
-  const smoothResetPanAndZoom = () => {
-    const xys = img.getTransform()
-    // img is the reference to the panzoom object
-    if (xys.scale > 1) { // calculate the point that should not move
-      const fScale = 1 - xys.scale
-      const fixeX = xys.x / fScale
-      const fixeY = xys.y / fScale
-      img.smoothZoomAbs(fixeX, fixeY, 1)
-    } else { // just go back to (0, 0) and scale 1
-      img.moveBy(-xys.x, -xys.y, true)
-      img.smoothZoomAbs(xys.x, xys.y, 1)
-    }
-    img.moveTo(0, 0) // to be sure to go back to (0,0)
-    img.zoomAbs(0, 0, 1) // to be sure to go back to scale 1
+const zoomOnName = (listIndex) => {
+  const item = sides[currentSideIndex].list[listIndex];
+  const m = sides[currentSideIndex].metadata;
+  console.log(item, m);
+  const y = item.lineIndex / m.lineCount;
+  console.log(y);
+  console.log(currentImage);
+  // resetPanAndZoom()
+  currentImage.smoothZoom(200, 400, 5);
+};
+
+const setUIEnabled = (enable) => {
+  $sideToggleButton.attr('disabled', !enable);
+  $search.attr('disabled', !enable);
+  $resetButton.attr('disabled', !enable);
+};
+
+const setSide = (sideIndex) => {
+  if (!Number.isFinite(sideIndex) || sideIndex === currentSideIndex) {
+    return;
   }
 
-  const resetPanAndZoom = () => {
-    img.moveTo(0, 0)
-    img.zoomAbs(0, 0, 1)
+  // Block actions
+  $currentImageElement.addClass('d-none');
+  setUIEnabled(false);
+
+  // Update element ref
+  if ($currentImageElement === $sideImg1) {
+    $currentImageElement = $sideImg2;
+  } else {
+    $currentImageElement = $sideImg1;
   }
 
-  const zoomOnName = listIndex => {
-    toggleActions(false)
-    
-    const item = sides[currentSideIndex].list[listIndex]
-    const m = sides[currentSideIndex].metadata
-    console.log(item, m)
-    const y = item.lineIndex / m.lineCount
-    console.log(y)
-    console.log(img)
-    // resetPanAndZoom()
-    img.smoothZoom(0, 400, 5)
+  $currentImageElement.removeClass('d-none');
+
+  // Update panzoom ref
+  if (currentImage) {
+    resetPanAndZoom(currentImage);
+    currentImage.dispose();
   }
+  currentImage = panzoom($currentImageElement[0], {
+    maxZoom: 20,
+    minZoom: 0.75,
+    zoomSpeed: 10,
+    // bounds: true, // breaks smoothResetPanAndZoom
+  });
 
-  const toggleActions = enable => {
-    // enable ? $sideImg.removeClass('d-none') : $sideImg.addClass('d-none')
-    enable ? $overlay.addClass('d-none') : $overlay.removeClass('d-none')
-    $sideDropdownButton.attr('disabled', !enable)
-    $searchBox.attr('disabled', !enable)
-    $resetButton.attr('disabled', !enable)
-  }
+  //debug
+  window.img = currentImage;
+  currentImage.on('transform', (e) => console.log(e.getTransform()));
 
-  const setSide = sideIndex => {
-    if (!Number.isFinite(sideIndex) || sideIndex === currentSideIndex || !sideImgPaths[sideIndex]) return
+  currentSideIndex = sideIndex;
+  $sideToggleButton.text(`Side ${currentSideIndex + 1}`);
 
-    // Block actions
-    $sideImg.addClass('d-none')
-    toggleActions(false)
+  setUIEnabled(true);
+};
 
-    if (img) {
-      resetPanAndZoom(img)
-      img.dispose()
-    }
+const createOptGroupFromList = (list, index, label) => {
+  const optgroup = document.createElement('optgroup');
+  optgroup.label = label;
 
-    currentSideIndex = sideIndex
-    $sideDropdownButton.text(`Side ${currentSideIndex + 1}`)
-    $sideImg.attr('src', sideImgPaths[currentSideIndex])
+  list.forEach((v, i) => {
+    const newOption = new Option(v.name, i, false, false);
+    optgroup.append(newOption);
+  });
 
-    // Update Select2 options
-    updateOptions(sides[currentSideIndex].list)
-  }
+  return optgroup;
+};
 
-  const updateOptions = list => {
-    // Clear, recreate 
-    $searchBox.empty()
+const createOptionsFromSides = (sides) => {
+  $search.empty(); // Clear, recreate
 
-    $searchBox.append('<option></option>') // Placeholder option
-    list.forEach((v, i) => {
-      const newOption = new Option(v.name, i, false, false)
-      $searchBox.append(newOption)
-    })
-    $searchBox.trigger('change')
-  }
+  $search.append('<option></option>'); // Placeholder option
 
-  // *************************************************************************
-  // Event handlers
+  sides.forEach((s, i) => {
+    $search.append(createOptGroupFromList(s.list, i, `Side ${i + 1}`));
+  });
 
-  $sideDropdown.find('a').click(e => {
-    const index = Number($(e.target).data('side-img-index'));
-    setSide(index);
-  })
+  $search.trigger('change');
+};
 
-  $resetButton.click(e => smoothResetPanAndZoom(img))
+// *************************************************************************
+// Event handlers
 
-  $sideImg.on('load', e => {
-    img = panzoom($sideImg[0], {
-      maxZoom: 20,
-      minZoom: 0.75,
-      zoomSpeed: 10,
-      // bounds: true, // breaks smoothResetPanAndZoom
-    })
+$sideToggleButton.click((e) => setSide(currentSideIndex === 1 ? 0 : 1));
 
-    //debug
-    window.img = img
-    img.on('transform', (e) => console.log(e.getTransform()))
+$resetButton.click((e) => smoothResetPanAndZoom(currentImage));
 
-    // Unblock actions
-    $sideImg.removeClass('d-none')
-    toggleActions(true)
-  })
-
-  $searchBox.on('select2:select', e => {
-    const listIndex = $searchBox.val()
-    zoomOnName(listIndex)
-  })
-
-  // *************************************************************************
-  // Initialize
-
-  $searchBox.select2({
-    theme: 'bootstrap-5',
-    placeholder: 'Type a name',
-    minimumInputLength: 2,
-    maximumInputLength: 10,
-    disabled: true
-  })
-
-  // Fetch metadata and name lists
-  await Promise.all([
-    fetch('data/side1.json'),
-    fetch('data/side2.json'),
-  ])
-  .then(values => Promise.all(values.map(v => v.json())))
-  .then(values => {
-    values.forEach((v, i) => {
-      const list = values[i].list
-      const metadata = values[i].metadata
-      // const options = {
-      //   minMatchCharLength: 3,
-      //   includeScore: true,
-      //   keys: ['name']
-      // }
-      // const fuseIndex = Fuse.parseIndex(values[i].fuseIndex)
-
-      sides[i] = { metadata, list, }
-      // fuse: new Fuse(list, options, fuseIndex)
-    })
-  })
-
-  setSide(0)
-
-  // *************************************************************************
-
+$search.on('select2:select', (e) => {
+  const listIndex = $search.val();
+  zoomOnName(listIndex);
 });
+
+// *************************************************************************
+// Initialize
+
+$search.select2({
+  theme: 'bootstrap-5',
+  placeholder: 'Loading...',
+  disabled: true,
+});
+
+$('#images')
+  .imagesLoaded()
+  .done(async () => {
+    // Fetch metadata and name lists
+    sides = await fetch('data/sides.json')
+      .then((res) => res.json())
+      .then((sides) => {
+        const expandListItemAttrNames = (list) =>
+          list.map(({ n, i, l, c }) => ({
+            name: n,
+            nameIndex: i,
+            lineIndex: l,
+            lineCharOffset: c,
+          }));
+
+        sides[0].list = expandListItemAttrNames(sides[0].list);
+        sides[1].list = expandListItemAttrNames(sides[1].list);
+
+        return sides;
+      });
+
+    console.log(sides);
+
+    // Init name select
+    $search.select2({
+      theme: 'bootstrap-5',
+      placeholder: 'Search for a name...',
+      disabled: false,
+      minimumInputLength: 1,
+      maximumInputLength: 44,
+    });
+    createOptionsFromSides(sides);
+
+    // Init rest of UI
+    setUIEnabled(true);
+
+    setSide(0);
+  });
+
+// *************************************************************************
