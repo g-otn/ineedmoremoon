@@ -13,14 +13,14 @@ html, body {
   width: 100%;
 }
 
-#side-img {
+#images img {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   margin: auto;
-  border: 10px dashed black;
+  border: 5px dashed black;
 
   /* Border around transparent image, laggy on mobile */
   /* -webkit-filter: 
@@ -44,7 +44,6 @@ html, body {
   z-index: 10;
   /* padding: 20px; */
   /* background: #00000088; */
-  text-align: center;
 }
 
 #overlay {

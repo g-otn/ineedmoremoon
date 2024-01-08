@@ -1,64 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>I Need More Moon - Engraving visualizer</title>
-  
-  <!-- PACE.js -->
-  <!--
-  <script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.3/pace.min.js" integrity="sha256-kubxe7yxLaribPaAekUOUDUCap6FSiCeKCQQqYQDs4s=" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.3/themes/blue/pace-theme-minimal.css">
-  -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#32325d" />
+    <title>I Need More Moon - Engravings</title>
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" integrity="sha256-zaSoHBhwFdle0scfGEFUCwggPN7F+ip9XRglo8IWb4w=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.0.0/dist/select2-bootstrap-5-theme.min.css" integrity="sha256-VFv2HpzPbiToau9dwknUIeolFoMBhww9IdBAaQWaNvU=" crossorigin="anonymous">
+    <link rel="preload" as="fetch" href="data/sides.json" crossorigin="anonymous" />
 
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div id="overlay"></div>
-  <div class="page-container">
-    <div class="ui">
-      <div class="container">
-        <nav class="navbar navbar-expand-md">
-          <div class="container-fluid">
-            <div class="d-flex justify-content-center w-100">
-              <div class="input-group me-1">
-                <button id="side-dropdown-button" class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" disabled>
-                  Side 1
-                </button>
-                <ul id="side-dropdown" class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#" data-side-img-index="0">Side 1</a></li>
-                  <li><a class="dropdown-item" href="#" data-side-img-index="1">Side 2</a></li>
-                </ul>
-                <select id="search" class="form-select" disabled></select>
+    <!-- Styles -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+    />
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- <div id="overlay"></div> -->
+    <div class="page-container">
+      <div class="ui">
+        <div class="container">
+          <nav class="navbar navbar-expand-md sticky-top">
+            <div class="container-fluid">
+              <div class="d-flex justify-content-center w-100">
+                <div class="input-group me-1">
+                  <button id="side-toggle" class="btn btn-primary" type="button" disabled>
+                    Side 1
+                  </button>
+                  <select id="search" class="form-select"></select>
+                </div>
+                <button id="reset" class="btn btn-primary" disabled>Reset</button>
               </div>
-              <button id="reset" class="btn btn-primary" disabled>Reset</button>
             </div>
-          </div>
-        </nav>
+          </nav>
+        </div>
+      </div>
+      <div id="images">
+        <div class="w-100 h-100"></div>
+        <img id="img-side1" src="https://i.imgur.com/Hk9LscW.jpg" />
+        <img id="img-side2" src="https://i.imgur.com/1wapF4h.jpg" class="d-none" />
       </div>
     </div>
-    <!-- <img id="side-img" src="https://via.placeholder.com/3500x1500"> -->
-    <div>
-      <div class="w-100 h-100"></div>
-      <img id="side-img">
-    </div>
-  </div>
-</body>
+  </body>
 
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/panzoom@9.4.3/dist/panzoom.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js"></script>
 
-<!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" integrity="sha256-9yRP/2EFlblE92vzCA10469Ctd0jT48HnmmMw5rJZrA=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/panzoom@9.4.1/dist/panzoom.min.js" integrity="sha256-0dwB5HJ3NFJpgfYQEhC/O15SjlPVMK/7r3ShU8ZnjNU=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js" integrity="sha256-In3CN7ZURQJ4NLxir70iD0vfibxQzEUvK/U5EUFnhU8=" crossorigin="anonymous"></script>
-
-<script src="main.js"></script>
-
+  <script src="main.js"></script>
 </html>
