@@ -13,6 +13,11 @@ html, body {
   position: absolute;
   height: 100%;
   width: 100%;
+  overflow: hidden;
+
+  display: grid;
+  justify-content: center;
+  align-items: center;
 }
 
 #images {
@@ -20,12 +25,12 @@ html, body {
 }
 
 #images img {
-  position: absolute;
+  /* position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  margin: auto;
+  bottom: 0; */
+  /* margin: auto; */
 
   /* Border around transparent image, laggy on mobile */
   /* -webkit-filter: 

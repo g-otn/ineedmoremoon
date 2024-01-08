@@ -1,41 +1,42 @@
 const $sideImg1 = $('#img-side1');
 const $sideImg2 = $('#img-side2');
 
-// *************************************************************************
-
 const $sideToggleButton = $('#side-toggle');
 const $search = $('#search');
 const $resetButton = $('#reset');
 
+// *************************************************************************
+
 let sides = [];
 let currentSideIndex = -1;
-let currentImage = null;
-let $currentImageElement = $sideImg1;
+let currentImgPanzoom = null;
+let $currentImgSide = $sideImg1;
 
 // *************************************************************************
 
 // https://github.com/anvaka/panzoom/issues/69#issuecomment-535444960
 const smoothResetPanAndZoom = () => {
-  const xys = currentImage.getTransform();
+  const xys = currentImgPanzoom.getTransform();
   // img is the reference to the panzoom object
   if (xys.scale > 1) {
     // calculate the point that should not move
     const fScale = 1 - xys.scale;
     const fixeX = xys.x / fScale;
     const fixeY = xys.y / fScale;
-    currentImage.smoothZoomAbs(fixeX, fixeY, 1);
+    console.info(fixeX, fixeY);
+    currentImgPanzoom.smoothZoomAbs(fixeX, fixeY, 1);
   } else {
     // just go back to (0, 0) and scale 1
-    currentImage.moveBy(-xys.x, -xys.y, true);
-    currentImage.smoothZoomAbs(xys.x, xys.y, 1);
+    currentImgPanzoom.moveBy(-xys.x, -xys.y, true);
+    currentImgPanzoom.smoothZoomAbs(xys.x, xys.y, 1);
   }
   // currentImage.moveTo(0, 0); // to be sure to go back to (0,0)
   // currentImage.zoomAbs(0, 0, 1); // to be sure to go back to scale 1
 };
 
 const resetPanAndZoom = () => {
-  currentImage.moveTo(0, 0);
-  currentImage.zoomAbs(0, 0, 1);
+  currentImgPanzoom.moveTo(0, 0);
+  currentImgPanzoom.zoomAbs(0, 0, 1);
 };
 
 const zoomOnName = (sideIndex, listIndex) => {
@@ -47,23 +48,44 @@ const zoomOnName = (sideIndex, listIndex) => {
     setSide(sideIndex);
   }
 
-  smoothResetPanAndZoom();
+  // resetPanAndZoom();
+  // smoothResetPanAndZoom();
 
   const { list, metadata } = sides[currentSideIndex];
 
   const item = list[listIndex];
 
-  const { height, width } = $currentImageElement[0];
+  const { height, width, top, left } = $currentImgSide[0].getBoundingClientRect();
 
-  const centerX = width / 2;
-  const centerY = height / 2;
-  const positiveDeltaX = item.lineCharOffset / metadata.lineLengths[item.lineIndex];
-  const x = width * positiveDeltaX;
-  const y = height * (item.lineIndex / metadata.lineCount);
+  const screenHeight = $(window).height();
+  const screenWidth = $(window).width();
 
-  console.log(x, positiveDeltaX, '|', y);
+  const centerX = left + width / 2;
+  const centerY = top + height / 2;
+  const lineLength = metadata.lineLengths[item.lineIndex];
+  const nameCenterCharOffset = item.lineCharOffset + item.name.length / 2;
+  const deltaXFromCenter = (width / 2) * nameCenterCharOffset;
+  const circleYRatio = item.lineIndex / metadata.lineCount;
+  const deltaYFromCenter = height * circleYRatio - height / 2;
+  console.log(item.lineCharOffset, lineLength, deltaXFromCenter);
 
-  currentImage.smoothMoveTo(x, y);
+  // currentImage.smoothZoomAbs(width / 2, height / 2, 2);
+
+  const xys = currentImgPanzoom.getTransform();
+  // img is the reference to the panzoom object
+  if (xys.scale > 1.01) {
+    // calculate the point that should not move
+    const fScale = 1 - xys.scale;
+    const fixeX = (xys.x - width / 2) / fScale;
+    const fixeY = xys.y / fScale;
+    console.info('>1', xys.x, xys.y, fixeX, fixeY);
+    currentImgPanzoom.smoothZoomAbs(fixeX, fixeY, 1);
+  } else {
+    // just go back to (0, 0) and scale 1
+    console.info('just', xys.x, xys.y);
+    currentImgPanzoom.moveBy(-xys.x - deltaXFromCenter, -xys.y - deltaYFromCenter, true);
+    currentImgPanzoom.smoothZoomAbs(xys.x - deltaXFromCenter, xys.y + deltaYFromCenter, 1);
+  }
 };
 
 const setUIEnabled = (enable) => {
@@ -73,33 +95,37 @@ const setUIEnabled = (enable) => {
 };
 
 const setSide = (sideIndex) => {
-  $currentImageElement.addClass('d-none');
+  $currentImgSide.addClass('d-none');
 
   // Update element ref
-  $currentImageElement = sideIndex === 0 ? $sideImg1 : $sideImg2;
+  $currentImgSide = sideIndex === 0 ? $sideImg1 : $sideImg2;
 
   // Update panzoom ref
-  if (currentImage) {
-    resetPanAndZoom(currentImage);
-    currentImage.dispose();
+  if (currentImgPanzoom) {
+    resetPanAndZoom(currentImgPanzoom);
+    currentImgPanzoom.dispose();
   }
-  currentImage = panzoom($currentImageElement[0], {
+  currentImgPanzoom = panzoom($('#images')[0], {
     maxZoom: 25,
-    minZoom: 0.75,
+    minZoom: 0.1,
     zoomSpeed: 0.8,
-    smoothScroll: true,
+    smoothScroll: false,
     // bounds: true, // breaks smoothResetPanAndZoom in desktop
   });
+  // currentImage.on('panstart', () => setUIEnabled(false));
+  // currentImage.on('panend', () => setUIEnabled(true));
+  // currentImage.on('zoomend', () => setUIEnabled(true));
 
   currentSideIndex = sideIndex;
 
   //debug
-  window.img = currentImage;
-  currentImage.on('transform', (e) => console.log(e.getTransform()));
+  window.img = currentImgPanzoom;
+  window.imge = $currentImgSide[0];
+  // currentImage.on('transform', (e) => console.log(e.getTransform()));
 
   // Update UI
   $sideToggleButton.text(`Side ${currentSideIndex + 1}`);
-  $currentImageElement.removeClass('d-none');
+  $currentImgSide.removeClass('d-none');
 };
 
 const createOptGroupFromList = (list, sideIndex, label) => {
@@ -133,7 +159,7 @@ $sideToggleButton.click((e) => setSide(currentSideIndex === 1 ? 0 : 1));
 
 $resetButton.click((e) => {
   $search.val(null).trigger('change');
-  smoothResetPanAndZoom(currentImage);
+  smoothResetPanAndZoom(currentImgPanzoom);
 });
 
 $search.on('select2:select', (e) => {
