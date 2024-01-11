@@ -48,7 +48,7 @@ const zoomOnName = (sideIndex, listIndex) => {
     setSide(sideIndex);
   }
 
-  // resetPanAndZoom();
+  resetPanAndZoom();
   // smoothResetPanAndZoom();
 
   const { list, metadata } = sides[currentSideIndex];
@@ -62,14 +62,23 @@ const zoomOnName = (sideIndex, listIndex) => {
 
   const centerX = left + width / 2;
   const centerY = top + height / 2;
+
+  const lineHeight = height / metadata.lineCount;
+
   const lineLength = metadata.lineLengths[item.lineIndex];
+  const lineWidthRatio = lineLength / 277;
+  const lineWidth = lineWidthRatio * width;
   const nameCenterCharOffset = item.lineCharOffset + item.name.length / 2;
-  const deltaXFromCenter = (width / 2) * nameCenterCharOffset;
-  const circleYRatio = item.lineIndex / metadata.lineCount;
-  const deltaYFromCenter = height * circleYRatio - height / 2;
-  console.log(item.lineCharOffset, lineLength, deltaXFromCenter);
+  const xRatioFromLeft = nameCenterCharOffset / lineLength;
+  const deltaXFromCenter = lineWidth * xRatioFromLeft - lineWidth / 2;
+
+  const yRatioFromTop = item.lineIndex / metadata.lineCount;
+  const deltaYFromCenter = height * yRatioFromTop - height / 2;
 
   // currentImage.smoothZoomAbs(width / 2, height / 2, 2);
+
+  // Padding on the image, reducing radius of circle to match the 'circle of letters' better.
+  const padding = 0.96;
 
   const xys = currentImgPanzoom.getTransform();
   // img is the reference to the panzoom object
@@ -83,8 +92,19 @@ const zoomOnName = (sideIndex, listIndex) => {
   } else {
     // just go back to (0, 0) and scale 1
     console.info('just', xys.x, xys.y);
-    currentImgPanzoom.moveBy(-xys.x - deltaXFromCenter, -xys.y - deltaYFromCenter, true);
-    currentImgPanzoom.smoothZoomAbs(xys.x - deltaXFromCenter, xys.y + deltaYFromCenter, 1);
+    // TODO: calculate transform origin for zooming, get normalized coordinate for img element instead of page-container
+    // (i.e (0,0) transform origin is top left of screen, not img)
+    currentImgPanzoom.setTransformOrigin({ x: 0.5, y: 0.5 });
+    currentImgPanzoom.moveBy(
+      -xys.x - deltaXFromCenter * padding,
+      -xys.y - deltaYFromCenter * padding,
+      true,
+    );
+    currentImgPanzoom.smoothZoom(
+      xys.x - deltaXFromCenter * padding,
+      xys.y - deltaYFromCenter * padding,
+      1,
+    );
   }
 };
 
@@ -113,7 +133,6 @@ const setSide = (sideIndex) => {
     // bounds: true, // breaks smoothResetPanAndZoom in desktop
   });
   // currentImage.on('panstart', () => setUIEnabled(false));
-  // currentImage.on('panend', () => setUIEnabled(true));
   // currentImage.on('zoomend', () => setUIEnabled(true));
 
   currentSideIndex = sideIndex;
@@ -122,6 +141,7 @@ const setSide = (sideIndex) => {
   window.img = currentImgPanzoom;
   window.imge = $currentImgSide[0];
   // currentImage.on('transform', (e) => console.log(e.getTransform()));
+  currentImgPanzoom.on('panend', (e) => console.log(e.getTransform()));
 
   // Update UI
   $sideToggleButton.text(`Side ${currentSideIndex + 1}`);
