@@ -37,12 +37,10 @@ const generateNameList = (rawNamesFilePath) => {
 const generateSide = (rawNamesFilePath) => {
   const metadata = generateSideMetadata(rawNamesFilePath);
   const list = generateNameList(rawNamesFilePath);
-  // const fuseIndex = generateFuseIndex(list)
 
   return {
     list,
     metadata,
-    // fuseIndex: fuseIndex.toJSON(),
   };
 };
 
