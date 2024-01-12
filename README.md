@@ -4,6 +4,12 @@ Visualize and search for names in the silicate engravings of the I Need More Moo
 
 **http://g-otn.github.io/ineedmoremoon**
 
+<p align="center">
+  <img src="https://github.com/g-otn/ineedmoremoon/assets/44736064/7d105e40-2497-4c9a-b364-745e47c7624d" alt="demo"/>
+</p>
+
+</center>
+
 ## I Need More Moon project
 
 I Need More Moon is a project by [TJ Cooney](https://twitter.com/TJ_Cooney) to send thousands of names in digital and physical storage to the Moon on the Astrobotic Peregrine lander.
