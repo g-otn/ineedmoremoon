@@ -49,69 +49,84 @@ const zoomOnName = (sideIndex, listIndex) => {
   }
 
   resetPanAndZoom();
-  // smoothResetPanAndZoom();
 
-  const { list, metadata } = sides[currentSideIndex];
+  setTimeout(() => {
+    const { list, metadata } = sides[currentSideIndex];
 
-  const item = list[listIndex];
+    const item = list[listIndex];
 
-  const { height, width, top, left } = $currentImgSide[0].getBoundingClientRect();
+    const { height, width, top, left } = $currentImgSide[0].getBoundingClientRect();
 
-  const screenHeight = $(window).height();
-  const screenWidth = $(window).width();
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
 
-  const centerX = left + width / 2;
-  const centerY = top + height / 2;
+    // Calculate move X
+    const lineLength = metadata.lineLengths[item.lineIndex];
+    const lineWidthRatio = lineLength / 277;
+    const lineWidth = lineWidthRatio * width;
+    const nameCenterCharOffset = item.lineCharOffset + item.name.length / 2;
+    const xRatioFromLeft = nameCenterCharOffset / lineLength;
+    const dXFromCenter = lineWidth * xRatioFromLeft - lineWidth / 2;
 
-  const lineHeight = height / metadata.lineCount;
+    // Calculate move Y
+    const yRatioFromTop = item.lineIndex / metadata.lineCount;
+    const dYFromCenter = height * yRatioFromTop - height / 2;
 
-  const lineLength = metadata.lineLengths[item.lineIndex];
-  const lineWidthRatio = lineLength / 277;
-  const lineWidth = lineWidthRatio * width;
-  const nameCenterCharOffset = item.lineCharOffset + item.name.length / 2;
-  const xRatioFromLeft = nameCenterCharOffset / lineLength;
-  const deltaXFromCenter = lineWidth * xRatioFromLeft - lineWidth / 2;
+    // Padding on the image, reducing diamater of circle from image width
+    // to match the 'circle of letters' better.
+    const padding = 0.95;
 
-  const yRatioFromTop = item.lineIndex / metadata.lineCount;
-  const deltaYFromCenter = height * yRatioFromTop - height / 2;
+    const xys = currentImgPanzoom.getTransform();
 
-  // currentImage.smoothZoomAbs(width / 2, height / 2, 2);
-
-  // Padding on the image, reducing radius of circle to match the 'circle of letters' better.
-  const padding = 0.96;
-
-  const xys = currentImgPanzoom.getTransform();
-  // img is the reference to the panzoom object
-  if (xys.scale > 1.01) {
-    // calculate the point that should not move
-    const fScale = 1 - xys.scale;
-    const fixeX = (xys.x - width / 2) / fScale;
-    const fixeY = xys.y / fScale;
-    console.info('>1', xys.x, xys.y, fixeX, fixeY);
-    currentImgPanzoom.smoothZoomAbs(fixeX, fixeY, 1);
-  } else {
-    // just go back to (0, 0) and scale 1
-    console.info('just', xys.x, xys.y);
-    // TODO: calculate transform origin for zooming, get normalized coordinate for img element instead of page-container
-    // (i.e (0,0) transform origin is top left of screen, not img)
     currentImgPanzoom.setTransformOrigin({ x: 0.5, y: 0.5 });
     currentImgPanzoom.moveBy(
-      -xys.x - deltaXFromCenter * padding,
-      -xys.y - deltaYFromCenter * padding,
+      -xys.x - dXFromCenter * padding,
+      -xys.y - dYFromCenter * padding,
       true,
     );
-    currentImgPanzoom.smoothZoom(
-      xys.x - deltaXFromCenter * padding,
-      xys.y - deltaYFromCenter * padding,
-      1,
-    );
-  }
+    setTimeout(() => {
+      currentImgPanzoom.smoothZoomAbs(centerX, centerY, 12);
+      currentImgPanzoom.setTransformOrigin(null);
+    }, 500);
+
+    // Panzoom transforms are 'async' so we need to wait just a bit to get updated values.
+  }, 100);
 };
 
 const setUIEnabled = (enable) => {
   $sideToggleButton.attr('disabled', !enable);
   $search.attr('disabled', !enable);
   $resetButton.attr('disabled', !enable);
+};
+
+// debug point
+window.point = () => {
+  // Get the element's position
+  const rect = $('#images')[0].getBoundingClientRect();
+
+  // Calculate the element's center position
+  const elementCenterX = rect.left + rect.width / 2;
+  const elementCenterY = rect.top + rect.height / 2;
+
+  // Get the screen's center position
+  const screenCenterX = window.innerWidth / 2;
+  const screenCenterY = window.innerHeight / 2;
+
+  // Calculate the left and top offset from the element's center position to the screen's center position
+  const leftOffset = screenCenterX - rect.left;
+  const topOffset = screenCenterY - rect.top;
+
+  const pointDiv = document.createElement('div');
+  pointDiv.style.position = 'absolute';
+  pointDiv.style.top = `${topOffset}px`;
+  pointDiv.style.left = `${leftOffset}px`;
+  pointDiv.style.width = '10px';
+  pointDiv.style.height = '10px';
+  pointDiv.style.backgroundColor = 'red';
+  pointDiv.style.borderRadius = '50%';
+  pointDiv.style.transform = 'translate(-50%, -50%)';
+
+  $('#images')[0].appendChild(pointDiv);
 };
 
 const setSide = (sideIndex) => {
@@ -127,8 +142,8 @@ const setSide = (sideIndex) => {
   }
   currentImgPanzoom = panzoom($('#images')[0], {
     maxZoom: 25,
-    minZoom: 0.1,
-    zoomSpeed: 0.8,
+    minZoom: 1,
+    zoomSpeed: 0.1,
     smoothScroll: false,
     // bounds: true, // breaks smoothResetPanAndZoom in desktop
   });
