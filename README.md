@@ -4,9 +4,11 @@ Visualize and search for names in the silicate engravings of the I Need More Moo
 
 **http://g-otn.github.io/ineedmoremoon**
 
+<a href="http://g-otn.github.io/ineedmoremoon">
 <p align="center">
   <img src="https://github.com/g-otn/ineedmoremoon/assets/44736064/7d105e40-2497-4c9a-b364-745e47c7624d" alt="demo"/>
 </p>
+</a>
 
 </center>
 
@@ -16,7 +18,7 @@ I Need More Moon is a project by [TJ Cooney](https://twitter.com/TJ_Cooney) to s
 
 Learn more:
 
-- ["Same Your Name to the Moon (Free)" - Youtube](https://www.youtube.com/watch?v=Gb1WrGvxO8M)
+- ["Send Your Name to the Moon (Free)" - Youtube](https://www.youtube.com/watch?v=Gb1WrGvxO8M)
 - [I Need More Moon Substack](https://ineedmoremoon.substack.com/)
 - [Peregrine Mission One](https://en.wikipedia.org/wiki/Peregrine_Mission_One) (lander mission)
 - [DHL MoonBox](https://en.wikipedia.org/wiki/DHL_MoonBox) (box containing the silicate)
@@ -28,7 +30,7 @@ Learn more:
 The raw data used, provided via Google Drive, were:
 
 - Two high-resolution photos were provided (one for each side of the silicate disc).
-  - These were upscaled and denoised using waifu2x for slighly better readibility.
+  - These were upscaled and denoised using waifu2x for slightly better readibility.
   - The photos have some defects because there was no time to get a better picture.
   - Hosted in Imgur with permission.
 - Two `.txt` files containing the list of names (one for each side of the silicate disc), in "circular" formatting. See [data/names/raw](data/names/raw).
