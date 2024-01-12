@@ -43,16 +43,16 @@ const zoomOnName = (sideIndex, listIndex) => {
   sideIndex = Number(sideIndex);
   listIndex = Number(listIndex);
 
-  console.log('zoom side', currentSideIndex, sideIndex);
   if (currentSideIndex !== sideIndex) {
     setSide(sideIndex);
   }
 
+  currentImgPanzoom.pause();
+  setUIEnabled(false);
   resetPanAndZoom();
 
   setTimeout(() => {
     const { list, metadata } = sides[currentSideIndex];
-
     const item = list[listIndex];
 
     const { height, width, top, left } = $currentImgSide[0].getBoundingClientRect();
@@ -84,12 +84,16 @@ const zoomOnName = (sideIndex, listIndex) => {
       -xys.y - dYFromCenter * padding,
       true,
     );
+
     setTimeout(() => {
       currentImgPanzoom.smoothZoomAbs(centerX, centerY, 12);
       currentImgPanzoom.setTransformOrigin(null);
-    }, 500);
-
-    // Panzoom transforms are 'async' so we need to wait just a bit to get updated values.
+      currentImgPanzoom.resume();
+      setUIEnabled(true);
+      // Wait for the smooth animation (amator default)
+    }, 410);
+    // Panzoom transforms are 'async' so we need to wait
+    // a little bit to get updated element rect values.
   }, 100);
 };
 
@@ -97,36 +101,6 @@ const setUIEnabled = (enable) => {
   $sideToggleButton.attr('disabled', !enable);
   $search.attr('disabled', !enable);
   $resetButton.attr('disabled', !enable);
-};
-
-// debug point
-window.point = () => {
-  // Get the element's position
-  const rect = $('#images')[0].getBoundingClientRect();
-
-  // Calculate the element's center position
-  const elementCenterX = rect.left + rect.width / 2;
-  const elementCenterY = rect.top + rect.height / 2;
-
-  // Get the screen's center position
-  const screenCenterX = window.innerWidth / 2;
-  const screenCenterY = window.innerHeight / 2;
-
-  // Calculate the left and top offset from the element's center position to the screen's center position
-  const leftOffset = screenCenterX - rect.left;
-  const topOffset = screenCenterY - rect.top;
-
-  const pointDiv = document.createElement('div');
-  pointDiv.style.position = 'absolute';
-  pointDiv.style.top = `${topOffset}px`;
-  pointDiv.style.left = `${leftOffset}px`;
-  pointDiv.style.width = '10px';
-  pointDiv.style.height = '10px';
-  pointDiv.style.backgroundColor = 'red';
-  pointDiv.style.borderRadius = '50%';
-  pointDiv.style.transform = 'translate(-50%, -50%)';
-
-  $('#images')[0].appendChild(pointDiv);
 };
 
 const setSide = (sideIndex) => {
@@ -140,23 +114,20 @@ const setSide = (sideIndex) => {
     resetPanAndZoom(currentImgPanzoom);
     currentImgPanzoom.dispose();
   }
+
   currentImgPanzoom = panzoom($('#images')[0], {
     maxZoom: 25,
     minZoom: 1,
-    zoomSpeed: 0.1,
-    smoothScroll: false,
+    zoomSpeed: 0.2,
+    smoothScroll: true,
     // bounds: true, // breaks smoothResetPanAndZoom in desktop
   });
-  // currentImage.on('panstart', () => setUIEnabled(false));
-  // currentImage.on('zoomend', () => setUIEnabled(true));
 
   currentSideIndex = sideIndex;
 
   //debug
-  window.img = currentImgPanzoom;
-  window.imge = $currentImgSide[0];
-  // currentImage.on('transform', (e) => console.log(e.getTransform()));
-  currentImgPanzoom.on('panend', (e) => console.log(e.getTransform()));
+  // window.img = currentImgPanzoom;
+  // window.imge = $currentImgSide[0];
 
   // Update UI
   $sideToggleButton.text(`Side ${currentSideIndex + 1}`);
@@ -233,8 +204,6 @@ $('#images')
 
         return sides;
       });
-
-    console.log(sides);
 
     // Init name select
     $search.select2({
