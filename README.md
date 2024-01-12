@@ -38,7 +38,8 @@ Requirements: Node.js
 git clone https://github.com/g-otn/ineedmoremoon
 ```
 
-2. Run `generate-data.js` to generate the `sides.json` file. It'll contain the metadata used to calculate the approximate position of each name in the images.
+2. (Optional) Run `generate-data.js` to generate the `sides.json` file.
+   It'll contain the metadata used to calculate the approximate position of each name in the images.
 
 ```
 npm start

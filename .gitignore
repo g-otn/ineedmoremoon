@@ -132,4 +132,4 @@ dist
 # ---
 
 data/side*.*
-public/data/sides.json
+#public/data/sides.json
