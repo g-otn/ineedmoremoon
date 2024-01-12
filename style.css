@@ -4,7 +4,6 @@ html, body {
   padding: 0;
   color: #32325d;
   user-select: none;
-  background-color: black;
 }
 
 .page-container {
@@ -13,37 +12,19 @@ html, body {
   position: absolute;
   height: 100%;
   width: 100%;
-  overflow: hidden;
+  overflow: hidden;}
 
-  display: grid;
+#images {
+  /* max-width: 100%; */
+  width: 100%;
+  height: 100%;
+
+  display: flex;
   justify-content: center;
   align-items: center;
 }
 
-#images {
-  /* max-width: 100%; */
-}
-
 #images img {
-  /* position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0; */
-  /* margin: auto; */
-
-  /* Border around transparent image, laggy on mobile */
-  /* -webkit-filter: 
-  drop-shadow(2px 2px 0 #fff) 
-  drop-shadow(-2px 2px 0 #fff) 
-  drop-shadow(2px -2px 0 #fff) 
-  drop-shadow(-2px -2px 0 #fff);
-  filter:
-  drop-shadow(2px 2px 0 #fff) 
-  drop-shadow(-2px 2px 0 #fff) 
-  drop-shadow(2px -2px 0 #fff) 
-  drop-shadow(-2px -2px 0 #fff); */
-  
   max-width: 95vh;
   max-height: 95vw;
 }
@@ -51,9 +32,8 @@ html, body {
 .ui {
   position: absolute;
   width: 100%;
+  max-width: 600px;
   z-index: 10;
-  /* padding: 20px; */
-  /* background: #00000088; */
 }
 
 
@@ -66,8 +46,8 @@ nav {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 125px;
-  height: 100px;
+  width: 75px;
+  height: 50px;
   border: 4px solid red;
   border-radius: 400px;
   pointer-events: none;
